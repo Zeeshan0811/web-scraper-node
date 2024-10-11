@@ -1,4 +1,5 @@
 import puppeteer from "puppeteer";
+import fs from 'fs';
 
 const scrape = async () => {
     const browser = await puppeteer.launch();
@@ -12,11 +13,24 @@ const scrape = async () => {
         const bookElements = document.querySelectorAll('.product_pod');
         return Array.from(bookElements).map((book)=>{
             const title = book.querySelector('h3 a').getAttribute('title');
-            return title;
+            const price = book.querySelector('.price_color').textContent;
+            const stock = book.querySelector('.instock.availability') ? 'In Stock' : 'Out of Stock';
+            const rating = book.querySelector('.star-rating').className.split(' ')[1];
+            const link = book.querySelector('h3 a').getAttribute('href');
+
+            return {
+                title,
+                price,
+                stock,
+                rating,
+                link
+            };
         });
     });
 
-    console.log(books);
+    fs.writeFileSync('books.json', JSON.stringify(books, null,2))
+
+    console.log("Data Saved to books.json");
     await browser.close();
 };
 
